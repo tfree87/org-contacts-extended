@@ -1037,9 +1037,7 @@ address."
   (let ((marker (org-get-at-bol 'org-hd-marker)))
     (org-with-point-at marker
       (let ((email-list (org-contacts-get-alist org-contacts-email-properties)))
-        (print email-list)
         (let ((email (org-contacts-get-alist-value email-list ask)))
-          (print email)
           (compose-mail (org-contacts-format-email (org-get-heading t) email)))))))
 
 (defun org-contacts-get-icon (&optional pom)
