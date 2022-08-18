@@ -23,3 +23,11 @@ Org Contacts Extended is designed with the following principles in mind:
 1. As opposed to storing multiple user addresses and info under a single property, use multiple named properties to store contact information. For example, instead of having multiple email addresses listed under a contact under a single ~:EMAIL:~, store each address under properties such as ~:WORK_EMAI:L~, ~:HOME_EMAIL:~, and ~:OTHER_EMAIL:~, etc. This makes searching for the correct information easier and works well with the Emacs completion system for interactively choosing contact information.
 2. Allow the user to expand on the different properties for contact information so there is no limit to how much information can be stored. A user can define more contact information types under general categories using the Emacs ~M-x customize~ interface. For example, the "Address" category could be expanded to contain different types of address properties such as "WORK_ADDRESS", "HOME_ADDRESS", "VACATION_HOME_ADDRESS", and so on. Each property would refer to a single address.
 3. Create functions to use contact information outside of Emacs, such as using email software outside of Emacs to compose a message.
+
+* Planned Features
+
+- [x] Create customizable listts of properties for contact iformation
+- [X] Create a function to interactively copy any contact information of a contact with completion
+- [x] Expand the types of contact information to include a contact's anniversaries, company, and job title
+- [-] Add support for All The Icons
+- [-] Add support for creating organization hierarchy graphs
