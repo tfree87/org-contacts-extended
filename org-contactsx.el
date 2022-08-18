@@ -129,11 +129,19 @@ The following replacements are available:
   :type 'string)
 
 (defcustom org-contacts-company-default-property "COMPANY"
-  "The default address name used for templates."
+  "The default company property name used for templates."
   :type 'string)
 
 (defcustom org-contacts-company-properties '("COMPANY")
   "A list of properties defining companies for the contact."
+  :type '(repeat string))
+
+(defcustom org-contacts-company-default-property "DEPARTMENT"
+  "The default department property name used for templates."
+  :type 'string)
+
+(defcustom org-contacts-company-properties '("DEPARTMENT")
+  "A list of properties defining dpartments for the contact."
   :type '(repeat string))
 
 (defcustom org-contacts-email-default-property "EMAIL"
