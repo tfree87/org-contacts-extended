@@ -1525,7 +1525,7 @@ address."
                                  nil))))
     (concat "[[mailto:" email "]]")))
 
-(provide 'org-contacts)
+(provide 'org-contactsx)
 
 
 ;;; org-contactsx.el ends here
