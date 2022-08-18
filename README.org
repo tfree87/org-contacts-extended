@@ -12,6 +12,7 @@
 #+options: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
 #+options: timestamp:t title:t toc:t todo:t |:t num:nil
 
+
 *This package is currently a work in progress and is not ready for daily use.*
 
 Expanding on the power of org-contacts.el. This is a fork of ~org-contacts.el~.

@@ -956,14 +956,6 @@ This function should be called from `gnus-article-prepare-hook'."
       (concat (org-contacts-format-name name) " <" email ">")
     email))
 
-(defun org-contacts-check-mail-address (mail)
-  "Add MAIL address to contact at point if it does not have it."
-  (let ((mails (org-entry-get (point) org-contacts-default-email-property)))
-    (unless (member mail (split-string mails))
-      (when (yes-or-no-p
-             (format "Do you want to add this address to %s?" (org-get-heading t)))
-        (org-set-property org-contacts-default-email-property (concat mails " " mail))))))
-
 (defun org-contacts-gnus-check-mail-address ()
   "Check that contact has the current address recorded.
 This function should be called from `gnus-article-prepare-hook'."
@@ -1044,18 +1036,11 @@ address."
   (interactive "P")
   (let ((marker (org-get-at-bol 'org-hd-marker)))
     (org-with-point-at marker
-      (let ((emails (org-entry-get (point) org-contacts-default-email-property)))
-        (if emails
-            (let ((email-list (org-contacts-split-property emails)))
-              (if (and (= (length email-list) 1) (not ask))
-                  (compose-mail (org-contacts-format-email
-                                 (org-get-heading t) emails))
-                (let ((email (completing-read "Send mail to which address: " email-list)))
-                  (setq email (org-contacts-strip-link email))
-                  (org-contacts-check-mail-address email)
-                  (compose-mail (org-contacts-format-email (org-get-heading t) email)))))
-          (error (format "This contact has no mail address set (no %s property)"
-                         org-contacts-default-email-property)))))))
+      (let ((email-list (org-contacts-get-alist org-contacts-email-properties)))
+        (print email-list)
+        (let ((email (org-contacts-get-alist-value email-list ask)))
+          (print email)
+          (compose-mail (org-contacts-format-email (org-get-heading t) email)))))))
 
 (defun org-contacts-get-icon (&optional pom)
   "Get icon for contact at POM."
@@ -1096,7 +1081,7 @@ address."
     (when org-contacts-icon-use-gravatar
       (defvar gravatar-size)
       (let* ((gravatar-size org-contacts-icon-size)
-             (email-list (org-entry-get pom org-contacts-default-email-property))
+             (email-list (org-entry-get pom org-contacts-email-default-property))
              (gravatar
               (when email-list
                 (cl-loop for email in (org-contacts-split-property email-list)
@@ -1178,14 +1163,14 @@ to do our best."
   (let* ((properties (nth 2 contact))
          (name (org-contacts-vcard-escape (car contact)))
          (n (org-contacts-vcard-encode-name name))
-         (email (cdr (assoc-string org-contacts-default-email-property properties)))
-         (tel (cdr (assoc-string org-contacts-default-tel-property properties)))
+         (email (cdr (assoc-string org-contacts-email-default-property properties)))
+         (tel (cdr (assoc-string org-contacts-tel-default-property properties)))
          (ignore-list (cdr (assoc-string org-contacts-ignore-property properties)))
          (ignore-list (when ignore-list
                         (org-contacts-split-property ignore-list)))
          (note (cdr (assoc-string org-contacts-note-property properties)))
          (bday (org-contacts-vcard-escape (cdr (assoc-string org-contacts-birthday-property properties))))
-         (addr (cdr (assoc-string org-contacts-default-address-property properties)))
+         (addr (cdr (assoc-string org-contacts-address-default-property properties)))
          (nick (org-contacts-vcard-escape (cdr (assoc-string org-contacts-nickname-property properties))))
          (head (format "BEGIN:VCARD\nVERSION:3.0\nN:%s\nFN:%s\n" n name))
          emails-list result phones-list)
@@ -1527,7 +1512,6 @@ address."
     (org-with-point-at marker
       (let ((property (completing-read "Select item to copy: "
                                        org-contacts-property-categories)))
-        (print property)
         (let ((alist (org-contacts-get-alist
                       (org-contacts-get-properties-list property))))
           (let ((value (org-contacts-get-alist-value alist
