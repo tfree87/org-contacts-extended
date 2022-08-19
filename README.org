@@ -27,15 +27,20 @@ Org Contacts Extended is designed with the following principles in mind:
 
 * Planned Features
 
-- [x] Create customizable listts of properties for contact iformation
+- [X] Create customizable listts of properties for contact iformation
 - [X] Create a function to interactively copy any contact information of a contact with completion
-- [x] Expand the types of contact information to include a contact's anniversaries, company, and job title
+- [X] Expand the types of contact information to include a contact's anniversaries, company, and job title
 - [-] Add support for All The Icons
-- [-] Add support for creating organization hierarchy graphs
 
 * Items to Complete
 
 - [ ] Fix vcard export to support multiple different email, address, and phone properties
+- [ ] Ensure that org-contactsx works with a majority of email packages in Emacs including:
+  - mu4e
+  - Gnus
+  - wl
+  - notmuch
+  - viewmail  
 
 * Tips and Tricks
 
