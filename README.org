@@ -36,3 +36,43 @@ Org Contacts Extended is designed with the following principles in mind:
 * Items to Complete
 
 - [ ] Fix vcard export to support multiple different email, address, and phone properties
+
+* Tips and Tricks
+
+** Use Consult to Search Contacts
+
+The following function will extend the excellent Consult package to search through headings of your ~org-contacts-files~ to allow for quick interactive searching of contacts. This function will work with both Org Contacts Extended and the orginal Org Contacts.
+
+#+begin_src emacs-lisp :tangle no :noweb-ref org_contacts_preface
+  (defun consult-org-contacts (&optional match)
+      "Jump to an Org contacts heading using files defined in `org-contacts-files'
+
+    By default, all contacts file entries are offered. MATCH is as in
+    `org-map-entries' and can be used to refine this. This function requires that
+    the library `org-contacts.el' be installed and the variable `org-contacts-files'
+    be set."
+      (interactive)
+      (unless (or (locate-library "org-contacts")
+                  (locate-library "org-contactsx"))
+        (user-error "The pacakge org-contacts must be installed to use this function"))
+      (unless org-contacts-files
+        (user-error "No contacts files defined"))
+      (consult-org-heading match org-contacts-files))
+#+end_src
+
+** Create Organization Charts
+
+Since Org Contacts Extended uses Org Mode headings, you can place contacts as subheadings underneath other contacts to create an organization heirarchy. To accomplish this, a file from the list of ~org-contacts-files~ that is organized similarly to the example below will work\:
+
+#+begin_src org
+  ,* Boss
+  :EMAIL: [[mailto:boss@boss.com]]
+
+  ,** Manager
+  :EMAIL: [[mailto:manager@boss.com]]
+
+  ,*** Employee
+  :EMAIL: [[mailto:employee@boss.com]]
+#+end_src
+
+Then, by installing and using packages such as Org Mind Map, you can then generate organizational charts using the above file.
