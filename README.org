@@ -34,6 +34,7 @@ Org Contacts Extended is designed with the following principles in mind:
 
 * Items to Complete
 
+- [ ] Shorten variable names
 - [ ] Fix vcard export to support multiple different email, address, and phone properties
 - [ ] Ensure that org-contactsx works with a majority of email packages in Emacs including:
   - mu4e
