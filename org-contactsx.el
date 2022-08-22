@@ -279,13 +279,14 @@ This overrides `org-email-link-description-format' if set."
 
 A regexp matching strings of whitespace, `,' and `;'.")
 
-(defvar org-contactsx-property-categories '("Address"
-                                           "Anniversary"
-                                           "Birthday"
-                                           "Company"
-                                           "Email"
-                                           "Job Title"
-                                           "Phone")
+(defvar org-contactsx-property-categories
+  `(("Address" . ,(list org-contactsx-address-properties))
+    ("Anniversary" . ,(list org-contactsx-anniv-properties))
+    ("Birthday" . ,(list org-contactsx-birthday-property))
+    ("Company". ,(list org-contactsx-company-properties))
+    ("Email" . ,(list org-contactsx-email-properties))
+    ("Job Title" . ,(list org-contactsx-job-properties))
+    ("Phone" . ,(list org-contactsx-tel-properties)))
   "An alist matching the type of information to the property keys.")
 
 (defvar org-contactsx-keymap
@@ -1448,30 +1449,12 @@ the corresponding value of that property under the contact heading."
       (let ((selection (completing-read "Select which item: " alist)))
         (org-contactsx-strip-link (cdr (assoc selection alist)))))))
 
-(defun org-contactsx-get-properties-list (category)
+(defun org-contactsx-props-from-category (category)
   "Return the list of contact properties matching CATEGORY.
 CATEGORY are those defined in `org-contactsx-property-categories' The function
 will then return the matching list of properties (e.g. `Address' returns
 the list `org-contactsx-address-properties')."
-  (let ((properties-list ""))
-    (cond ((string= category "Address")
-           (setq properties-list org-contactsx-address-properties))
-          ((string= category "Anniversary")
-           (setq properties-list org-contactsx-anniv-properties))
-          ((string= category "Birthday")
-           (setq properties-list org-contactsx-birthday-property))
-          ((string= category "Company")
-           (setq properties-list org-contactsx-company-properties))
-          ((string= category "Email")
-           (setq properties-list org-contactsx-email-properties))
-          ((string= category "Job Title")
-           (setq properties-list org-contactsx-job-properties))
-          ((string= category "Phone")
-           (setq properties-list org-contactsx-tel-properties))
-          (t
-           (error (format "No properties for contact category '%s' are defined."
-                          category))))
-    properties-list))
+  (cadr (assoc category org-contactsx-property-categories)))
 
 (defun org-contactsx-copy (&optional ask)
   "Copy a contact property value for the contact at point to the kill ring.
@@ -1480,12 +1463,12 @@ address."
   (interactive)
   (let ((marker (org-get-at-bol 'org-hd-marker)))
     (org-with-point-at marker
-      (let ((property (completing-read "Select item to copy: "
+      (let ((category (completing-read "Select item to copy: "
                                        org-contactsx-property-categories)))
         (let ((alist (org-contactsx-get-alist
-                      (org-contactsx-get-properties-list property))))
+                      (org-contactsx-props-from-category category))))
           (let ((value (org-contactsx-get-alist-value alist
-                                                     ask)))
+                                                      ask)))
             (kill-new value)
             (message (format "Added to kill ring: %s" value))))))))
 
