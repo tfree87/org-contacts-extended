@@ -1337,7 +1337,6 @@ are effectively trimmed).  If nil, all zero-length substrings are retained."
 ;;; link spec: [[org-contact:query][desc]]
 (if (fboundp 'org-link-set-parameters)
     (org-link-set-parameters "org-contact"
-                             :follow #'org-contactsx-link-open
                              :complete #'org-contactsx-link-complete
                              :store #'org-contactsx-link-store
                              :face 'org-contactsx-link-face)
@@ -1352,12 +1351,15 @@ are effectively trimmed).  If nil, all zero-length substrings are retained."
                      (mapcar #'expand-file-name (org-contactsx-files))))
     (if (bound-and-true-p org-id-link-to-org-use-id)
         (org-id-store-link)
-      (let ((headline-str (substring-no-properties (org-get-heading t t t t))))
+      (let ((headline-str (substring-no-properties (concat
+                                                    buffer-file-name
+                                                    "::*"
+                                                    (org-get-heading t t t t)))))
         (org-link-store-props
          :type "org-contact"
          :link headline-str
-         :description headline-str)
-        (let ((link (concat "org-contact:" headline-str)))
+         :description (org-get-heading t t t t))
+        (let ((link (concat "file:" headline-str)))
           (org-link-add-props :link link :description headline-str)
           link)))))
 
@@ -1378,51 +1380,17 @@ Each element has the form (NAME . (FILE . POSITION))."
         (org-contactsx-files))))
 
 ;;;###autoload
-(defun org-contactsx-link-open (path)
-  "Open contacts: link type with jumping or searching."
-  (let ((query path))
-    (cond
-     ;; /query/ format searching
-     ((string-match "/.*/" query)
-      (let* ((f (car (org-contactsx-files)))
-             (buf (get-buffer (file-name-nondirectory f))))
-        (unless (buffer-live-p buf) (find-file f))
-        (with-current-buffer buf
-          (string-match "/\\(.*\\)/" query)
-          (occur (match-string 1 query)))))
-     ;; jump to exact contact headline directly
-     (t
-      (let* ((f (car (org-contactsx-files)))
-             (_ (find-file f))
-             (buf (get-buffer (file-name-nondirectory f))))
-        (with-current-buffer buf
-          (goto-char (marker-position (org-find-exact-headline-in-buffer query))))
-        (display-buffer buf '(display-buffer-below-selected)))
-
-      ;; (let* ((f (car (org-contactsx-files)))
-      ;;        (_ (find-file f))
-      ;;        ;; FIXME:
-      ;;        (contact-entry (map-filter
-      ;;                        (lambda (contact-plist)
-      ;;                          (if (string-equal (plist-get contact-plist :name) query)
-      ;;                              contact-plist))
-      ;;                        (org-contactsx--all-contacts)))
-      ;;        (contact-name (plist-get contact-entry :name))
-      ;;        (file (plist-get contact-entry :file))
-      ;;        (position (plist-get contact-entry :position))
-      ;;        (buf (get-buffer (file-name-nondirectory file))))
-      ;;   (with-current-buffer buf (goto-char position))
-      ;;   (display-buffer buf '(display-buffer-below-selected)))
-      ))))
-
-;;;###autoload
 (defun org-contactsx-link-complete (&optional _arg)
   "Create a org-contactsx link using completion."
-  (let ((name (completing-read "org-contactsx NAME: "
+  (let ((name (completing-read "org-contacts NAME: "
                                (mapcar
                                 (lambda (plist) (plist-get plist :name))
                                 (org-contactsx--all-contacts)))))
-    (concat "org-contact:" name)))
+    (let ((file-name (catch 'file-name
+                       (dolist (element (org-contactsx--all-contacts))
+                         (when (string= (plist-get element :name) name)
+                           (throw 'file-name (plist-get element :file)))))))
+      (concat "file:" file-name "::*" name))))
 
 (defun org-contactsx-link-face (path)
   "Different face color for different org-contactsx link query."
@@ -1430,7 +1398,6 @@ Each element has the form (NAME . (FILE . POSITION))."
    ((string-match "/.*/" path)
     '(:background "sky blue" :overline t :slant 'italic))
    (t '(:inherit org-link))))
-
 
 ;;; org-mode link "mailto:" email completion.
 (if (fboundp 'org-link-set-parameters)
