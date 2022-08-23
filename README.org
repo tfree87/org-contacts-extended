@@ -24,6 +24,15 @@ Org Contacts Extended is designed with the following principles in mind:
 1. As opposed to storing multiple user addresses and info under a single property, use multiple named properties to store contact information. For example, instead of having multiple email addresses listed under a contact under a single ~:EMAIL:~, store each address under properties such as ~:WORK_EMAI:L~, ~:HOME_EMAIL:~, and ~:OTHER_EMAIL:~, etc. This makes searching for the correct information easier and works well with the Emacs completion system for interactively choosing contact information.
 2. Allow the user to expand on the different properties for contact information so there is no limit to how much information can be stored. A user can define more contact information types under general categories using the Emacs ~M-x customize~ interface. For example, the "Address" category could be expanded to contain different types of address properties such as "WORK_ADDRESS", "HOME_ADDRESS", "VACATION_HOME_ADDRESS", and so on. Each property would refer to a single address.
 3. Create functions to use contact information outside of Emacs, such as using email software outside of Emacs to compose a message.
+   
+* Differences Between Org Contacts Extended and Org Contacts
+
+Here is a list of differences between Org Contacts Extended and Org Contacts:
+
++ Contact information is stored differently from Org Contacts. As opposed to having a single ~:EMAIL:~ that would store multiple email addresses for each contact separated by whitespace, Org Contacts Extended defines a category called "Email" that would store different email addresses under different properties such as ~:WORK_EMAIL:~, ~:PERSONAL_EMAIL:~, or any other property the user wishes to define. Property categories can be assigned to categories using =M-x customize=.
++ *Each property can only contain a single value!* This is a major change from the original Org Contacts. The reason behind this change is so that each property acts as a label for each item of contact information. This allows the user to select emails based on their property name. For example, instead of having to remember which email listed under the ~:EMAIL:~ property corresponds to a contact's work email, the user can search for the ~:WORK_EMAIL:~ property and get the matching address. This can be very useful for contacts that have many different email addresses for different purposes.
++ More types of contact information can be stored compared to the original Org Contacts. These include: anniversaries, messenger accounts, company/employer name, department, job titles, and messenger accounts.
++ Contact information can be copied to the kill ring from any files defined in the variable ~org-contacts-files~ by using =M-x org-contactsx-copy=. Contact information can then be interactively copied to the kill ring with completion.
 
 * Planned Features
 
