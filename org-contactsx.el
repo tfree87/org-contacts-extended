@@ -75,7 +75,7 @@
 (require 'ol)
 
 (defgroup org-contactsx nil
-  "Options about contacts management."
+  "Options for Org Contacts Extended."
   :group 'org)
 
 (defcustom org-contacts-files nil
@@ -88,10 +88,20 @@ When set to nil, all your Org files will be used."
   :type 'string)
 
 (defcustom org-contactsx-address-properties '("ADDRESS"
-                                             "OTHER_ADDRESS"
-                                             "HOME_ADDRESS"
-                                             "WORK_ADDRESS")
+                                              "OTHER_ADDRESS"
+                                              "HOME_ADDRESS"
+                                              "WORK_ADDRESS")
   "A list of properties defining addresses for the contact."
+  :type '(repeat string))
+
+(defcustom org-contactsx-alias-default-property "ALIAS"
+  "Name of the property for contact name alias."
+  :type 'string)
+
+(defcustom org-contactsx-alias-properties '("ALIAS"
+                                            "AKA"
+                                            "NICKNAME")
+  "A list of properties defining aliases for the contact."
   :type '(repeat string))
 
 (defcustom org-contactsx-anniv-format "Anniversary: %l (%Y)"
@@ -124,9 +134,13 @@ The following replacements are available:
   %Y - Number of year (ordinal)"
   :type 'string)
 
-(defcustom org-contactsx-birthday-property "BIRTHDAY"
+(defcustom org-contactsx-birthday-default-property "BIRTHDAY"
   "Name of the property for contact birthday date."
   :type 'string)
+
+(defcustom org-contactsx-birthday-properties '("BIRTHDAY")
+  "A list of properties defining companies for the contact."
+  :type '(repeat string))
 
 (defcustom org-contactsx-company-default-property "COMPANY"
   "The default company property name used for templates."
@@ -181,16 +195,12 @@ The following replacements are available:
   :type 'string)
 
 (defcustom org-contactsx-tel-properties '("PHONE"
-                                         "WORK_PHONE"
-                                         "MOBILE_PHONE"
-                                         "HOME_PHONE"
-                                         "OTHER_PHONE")
+                                          "WORK_PHONE"
+                                          "MOBILE_PHONE"
+                                          "HOME_PHONE"
+                                          "OTHER_PHONE")
   "A list of properties defining telephone addresses for the contact."
   :type '(repeat string))
-
-(defcustom org-contactsx-alias-property "ALIAS"
-  "Name of the property for contact name alias."
-  :type 'string)
 
 (defcustom org-contactsx-ignore-property "IGNORE"
   "Name of the property, which values will be ignored when
@@ -233,10 +243,10 @@ completing or exporting to vcard."
   (mapconcat #'identity
              (mapcar (lambda (x) (concat x "<>\"\""))
                      (append org-contactsx-email-properties
-                                        ;org-contactsx-alias-property
+                             org-contactsx-alias-properties
                              org-contactsx-tel-properties
                              org-contactsx-address-properties
-                                        ;org-contactsx-birthday-property
+                             org-contactsx-birthday-properties
                              ))
              "|")
   "Matching rule for finding heading that are contacts.
@@ -274,15 +284,11 @@ This overrides `org-email-link-description-format' if set."
 (declare-function std11-narrow-to-header "ext:std11")
 (declare-function std11-fetch-field "ext:std11")
 
-(defconst org-contactsx-property-values-separators "[,; \f\t\n\r\v]+"
-  "The default value of separators for `org-contactsx-split-property'.
-
-A regexp matching strings of whitespace, `,' and `;'.")
-
 (defvar org-contactsx-property-categories
   `(("Address" . ,(list org-contactsx-address-properties))
+    ("Alias" . ,(list org-contactsx-alias-properties))
     ("Anniversary" . ,(list org-contactsx-anniv-properties))
-    ("Birthday" . ,(list org-contactsx-birthday-property))
+    ("Birthday" . ,(list org-contactsx-birthday-properties))
     ("Company". ,(list org-contactsx-company-properties))
     ("Email" . ,(list org-contactsx-email-properties))
     ("Job Title" . ,(list org-contactsx-job-properties))
@@ -603,12 +609,7 @@ A group FOO is composed of contacts with the tag FOO."
                                   ;; returned by `org-contactsx-filter'.
                                   for contact-name = (car contact)
                                   ;; Grab the first email of the contact
-                                  for email = (org-contactsx-strip-link
-                                               (or (car (org-contactsx-split-property
-                                                         (or
-                                                          (cdr (assoc-string org-contactsx-default-email-property
-                                                                             (cl-caddr contact)))
-                                                          ""))) ""))
+                                  for email = org-contactsx-email-default-property
                                   ;; If the user has an email address, append USER <EMAIL>.
                                   if email collect (org-contactsx-format-email contact-name email))
                          ", "))
@@ -678,10 +679,9 @@ description."
 
                    ;; Build the list of the email addresses which has
                    ;; been expired
-                   for ignore-list = (org-contactsx-split-property
-                                      (or (cdr (assoc-string
-                                                org-contactsx-ignore-property
-                                                (nth 2 contact))) ""))
+                   for ignore-list = (cdr (assoc-string
+                                           org-contactsx-ignore-property
+                                           (nth 2 contact)))
                    ;; Build the list of the user email addresses.
                    for email-list = (let ((emails '()))
                                       (dolist (property
@@ -857,7 +857,7 @@ Format is a string matching the following format specification:
     (unless format (setq format org-contactsx-birthday-format))
     (cl-loop for contact in (org-contactsx-filter)
              for anniv = (let ((anniv (cdr (assoc-string
-                                            (or field org-contactsx-birthday-property)
+                                            (or field org-contactsx-birthday-default-property)
                                             (nth 2 contact)))))
                            (when anniv
                              (calendar-gregorian-from-absolute
@@ -883,7 +883,7 @@ Only PROMPT and DEF are really used."
   (org-read-date nil nil nil prompt nil def))
 
 (add-to-list 'org-property-set-functions-alist
-             `(,org-contactsx-birthday-property . org-contactsx--completing-read-date))
+             `(,org-contactsx-birthday-default-property . org-contactsx--completing-read-date))
 
 (defun org-contactsx-template-name (&optional return-value)
   "Try to return the contact name for a template.
@@ -1173,7 +1173,7 @@ to do our best."
          (ignore-list (when ignore-list
                         (org-contactsx-split-property ignore-list)))
          (note (cdr (assoc-string org-contactsx-note-property properties)))
-         (bday (org-contactsx-vcard-escape (cdr (assoc-string org-contactsx-birthday-property properties))))
+         (bday (org-contactsx-vcard-escape (cdr (assoc-string org-contactsx-birthday-default-property properties))))
          (addr (cdr (assoc-string org-contactsx-address-default-property properties)))
          (nick (org-contactsx-vcard-escape (cdr (assoc-string org-contactsx-nickname-property properties))))
          (head (format "BEGIN:VCARD\nVERSION:3.0\nN:%s\nFN:%s\n" n name))
