@@ -47,7 +47,6 @@
 ;; :EMAIL: %(org-contactsx-template-email)
 ;; :PHONE:
 ;; :ALIAS:
-;; :NICKNAME:
 ;; :IGNORE:
 ;; :ICON:
 ;; :NOTE:
@@ -146,15 +145,18 @@ The following replacements are available:
   "The default company property name used for templates."
   :type 'string)
 
-(defcustom org-contactsx-company-properties '("COMPANY")
+(defcustom org-contactsx-company-properties '("COMPANY"
+                                              "EMPLOYER")
   "A list of properties defining companies for the contact."
   :type '(repeat string))
 
-(defcustom org-contactsx-company-default-property "DEPARTMENT"
+(defcustom org-contactsx-dept-default-property "DEPARTMENT"
   "The default department property name used for templates."
   :type 'string)
 
-(defcustom org-contactsx-company-properties '("DEPARTMENT")
+(defcustom org-contactsx-dept-properties '("DEPARTMENT"
+                                           "BRANCH"
+                                           "SUBDIVISION")
   "A list of properties defining dpartments for the contact."
   :type '(repeat string))
 
@@ -163,18 +165,36 @@ The following replacements are available:
   :type 'string)
 
 (defcustom org-contactsx-email-properties '("EMAIL"
-                                           "WORK_EMAIL"
-                                           "HOME_EMAIL"
-                                           "OTHER_EMAIL")
+                                            "WORK_EMAIL"
+                                            "PERSONAL_EMAIL"
+                                            "OTHER_EMAIL")
   "A list of properties defining email addresses for the contact."
   :type '(repeat string))
+
+(defcustom org-contactsx-irc-property "IRC"
+  "The default property defining the contact's IRC nickname."
+  :type 'string)
 
 (defcustom org-contactsx-job-default-property "JOB_TITLE"
   "The default job title used for templates."
   :type 'string)
 
-(defcustom org-contactsx-job-properties '("JOB_TITLE")
+(defcustom org-contactsx-job-properties '("JOB_TITLE"
+                                          "ROLE"
+                                          "RESPONSIBILITY")
   "A list of properties defining job titles for the contact."
+  :type '(repeat string))
+
+(defcustom org-contactsx-chat-default-property "MESSENGER"
+  "The default chat nickname used for templates."
+  :type 'string)
+
+(defcustom org-contactsx-chat-properties '("MESSENGER"
+                                           "BONJOUR"
+                                           "IRC"
+                                           "JABBER"
+                                           "SKYPE")
+  "A list of properties defining chat nicknames for the contact."
   :type '(repeat string))
 
 (defcustom org-contactsx-note-default-property "NOTE"
@@ -182,13 +202,12 @@ The following replacements are available:
   :type 'string)
 
 (defcustom org-contactsx-tel-properties '("PHONE"
-                                         "WORK_PHONE"
-                                         "MOBILE_PHONE"
-                                         "HOME_PHONE"
-                                         "OTHER_PHONE")
+                                          "WORK_PHONE"
+                                          "MOBILE_PHONE"
+                                          "HOME_PHONE"
+                                          "OTHER_PHONE")
   "A list of properties defining telephone addresses for the contact."
   :type '(repeat string))
-
 
 (defcustom org-contactsx-default-tel-property "PHONE"
   "The default telephone number name used for templates."
@@ -215,9 +234,9 @@ completing or exporting to vcard."
   "Name of the property for contact icon."
   :type 'string)
 
-(defcustom org-contactsx-nickname-property "NICKNAME"
-  "Name of the property for IRC nickname match."
-  :type 'string)
+                                        ;(defcustom org-contactsx-nickname-property "NICKNAME"
+                                        ;  "Name of the property for IRC nickname match."
+                                        ;  :type 'string)
 
 (defcustom org-contactsx-icon-size 32
   "Size of the contacts icons."
@@ -290,8 +309,10 @@ This overrides `org-email-link-description-format' if set."
     ("Anniversary" . ,(list org-contactsx-anniv-properties))
     ("Birthday" . ,(list org-contactsx-birthday-properties))
     ("Company". ,(list org-contactsx-company-properties))
+    ("Department" . ,(list org-contactsx-dept-properties))
     ("Email" . ,(list org-contactsx-email-properties))
     ("Job Title" . ,(list org-contactsx-job-properties))
+    ("Messenger" . ,(list org-contactsx-chat-properties))
     ("Phone" . ,(list org-contactsx-tel-properties)))
   "An alist matching the type of information to the property keys.")
 
@@ -1098,7 +1119,7 @@ address."
 (defun org-contactsx-irc-buffer (&optional pom)
   "Get the IRC buffer associated with the entry at POM."
   (setq pom (or pom (point)))
-  (let ((nick (org-entry-get pom org-contactsx-nickname-property)))
+  (let ((nick (org-entry-get pom org-contactsx-irc-property)))
     (when nick
       (let ((buffer (get-buffer nick)))
         (when buffer
