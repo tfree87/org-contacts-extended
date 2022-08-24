@@ -234,10 +234,6 @@ completing or exporting to vcard."
   "Name of the property for contact icon."
   :type 'string)
 
-                                        ;(defcustom org-contactsx-nickname-property "NICKNAME"
-                                        ;  "Name of the property for IRC nickname match."
-                                        ;  :type 'string)
-
 (defcustom org-contactsx-icon-size 32
   "Size of the contacts icons."
   :type 'string)
@@ -1160,8 +1156,8 @@ address."
                             in (mapcar #'car (erc-get-channel-user-list))
                             collect (elt user-entry 1)))))
 
-(add-to-list 'org-property-set-functions-alist
-             `(,org-contactsx-nickname-property . org-contactsx-completing-read-nickname))
+                                        ;(add-to-list 'org-property-set-functions-alist
+                                        ;             `(,org-contactsx-nickname-property . org-contactsx-completing-read-nickname))
 
 (defun org-contactsx-vcard-escape (str)
   "Escape ; , and \n in STR for the VCard format."
@@ -1196,7 +1192,7 @@ to do our best."
          (note (cdr (assoc-string org-contactsx-note-property properties)))
          (bday (org-contactsx-vcard-escape (cdr (assoc-string org-contactsx-birthday-default-property properties))))
          (addr (cdr (assoc-string org-contactsx-address-default-property properties)))
-         (nick (org-contactsx-vcard-escape (cdr (assoc-string org-contactsx-nickname-property properties))))
+         (nick " ")
          (head (format "BEGIN:VCARD\nVERSION:3.0\nN:%s\nFN:%s\n" n name))
          emails-list result phones-list)
     (concat
@@ -1318,42 +1314,6 @@ link string and return the pure link target."
   (if (fboundp 'org-add-link-type)
       (org-add-link-type "tel")))
 
-(defun org-contactsx-split-property (string &optional separators omit-nulls)
-  "Custom version of `split-string'.
-Split a property STRING into sub-strings bounded by matches
-for SEPARATORS but keep Org links intact.
-
-The beginning and end of STRING, and each match for SEPARATORS, are
-splitting points.  The substrings matching SEPARATORS are removed, and
-the substrings between the splitting points are collected as a list,
-which is returned.
-
-If SEPARATORS is non-nil, it should be a regular expression
-matching text which separates, but is not part of, the
-substrings.  If nil it defaults to `org-contactsx-property-values-separators',
-normally \"[,; \f\t\n\r\v]+\", and OMIT-NULLS is forced to t.
-
-If OMIT-NULLS is t, zero-length substrings are omitted from the list \(so
-that for the default value of SEPARATORS leading and trailing whitespace
-are effectively trimmed).  If nil, all zero-length substrings are retained."
-  (let* ((omit-nulls (if separators omit-nulls t))
-         (rexp (or separators org-contactsx-property-values-separators))
-         (inputlist (split-string string rexp omit-nulls))
-         (linkstring "")
-         (bufferstring "")
-         (proplist (list "")))
-    (while inputlist
-      (setq bufferstring (pop inputlist))
-      (if (string-match "\\[\\[" bufferstring)
-          (progn
-            (setq linkstring (concat bufferstring " "))
-            (while (not (string-match "\\]\\]" bufferstring))
-              (setq bufferstring (pop inputlist))
-              (setq linkstring (concat  linkstring bufferstring " ")))
-            (setq proplist (cons (org-trim linkstring) proplist)))
-        (setq proplist (cons bufferstring proplist))))
-    (cdr (reverse proplist))))
-
 ;;;###autoload
 ;;; Add an Org link type `org-contact:' for easy jump to or searching org-contactsx headline.
 ;;; link spec: [[org-contact:query][desc]]
@@ -1474,7 +1434,7 @@ the corresponding value of that property under the contact heading."
   "Return the list of contact properties matching CATEGORY.
 CATEGORY are those defined in `org-contactsx-property-categories' The function
 will then return the matching list of properties (e.g. `Address' returns
-the list `org-contactsx-address-properties')."
+                                                       the list `org-contactsx-address-properties')."
   (cadr (assoc category org-contactsx-property-categories)))
 
 (defun org-contactsx-copy (&optional ask)
@@ -1488,8 +1448,13 @@ address."
                                        org-contactsx-property-categories)))
         (let ((alist (org-contactsx-get-alist
                       (org-contactsx-props-from-category category))))
+          (unless alist
+            (error (format "No %s properties are defined for this contact" category)))
           (let ((value (org-contactsx-get-alist-value alist
                                                       ask)))
+            (message "Hello")
+            (when (= (length value) 0)
+              (error (format "No information found for %s." (caar alist))))
             (kill-new value)
             (message (format "Added to kill ring: %s" value))))))))
 
