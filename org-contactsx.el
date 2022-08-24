@@ -1434,7 +1434,7 @@ the corresponding value of that property under the contact heading."
   "Return the list of contact properties matching CATEGORY.
 CATEGORY are those defined in `org-contactsx-property-categories' The function
 will then return the matching list of properties (e.g. `Address' returns
-                                                       the list `org-contactsx-address-properties')."
+the list `org-contactsx-address-properties')."
   (cadr (assoc category org-contactsx-property-categories)))
 
 (defun org-contactsx-copy (&optional ask)
